@@ -39,6 +39,10 @@ library(magrittr)
 library(kableExtra)
 library(mosaic)
 library(knitr)
+library(dplyr)
+install.packages("ggpubr")
+library(ggpubr)
+library(radiant)
 
 f <- 'https://raw.githubusercontent.com/difiore/ada-2021-datasets/master/IMDB-movies.csv'
 
@@ -78,39 +82,60 @@ results <- d %>% group_by(decade) %>%
    summarise(mean=mean(runtimeMinutes), sd=sd(runtimeMinutes))
 
 results
+
+
 ```
 
-Draw a single sample of 100 movies, without replacement, from each decade, calculate this single sample mean and sample std in runtimeMinutes and estimes the SE around the population mean runtimeMinutes for each decade based on thee std and sample size from these samples
+Draw a single sample of 100 movies, without replacement, from each decade, calculate this single sample mean and sample std in runtimeMinutes and estimes the SE around the population mean runtimeMinutes for each decade based on the std and sample size from these samples
 
 ```{r}
 s <- d %>% group_by(decade) %>% sample_n(100) %>% summarise(mean=mean(runtimeMinutes), sd=sd(runtimeMinutes)
-                                                            
+ 
+                                                          
 
                                                             
-```
-Compare these estimates to the actual population mean runtimeMinutes for each decade and to the calculated SE in the population mean for samples of size 100 based on the population std for each decade
 
-```{r}
+n = 100
+reps = 1000
 
-
-}
-
-```
-
-Generate a sampling distribution of mean runtimeMinutes for each decade by a) drawing 1000 samples of 100 movies from each decade and for each sample b) calculating the mean runtimeMinutes and the std in runtimeMinutes. Then, calculate the mean and the std of the sampling distribution of sample means for each decade and plot a histogram of the sample distribution. what shape does it have?
-
-```{r}
-n <- 100
-reps <-1000
-
-sample_distrib <- do(reps) * d %>% 
-  group_by(decade) %>%
-  sample_n(size = n, replace = FALSE) %>%
-  summarise_at(vars(runtimeMinutes), funs(mean(., na.rm=TRUE), sd(., na.rm = TRUE)))
-
+for (i in names(table(d$decade))){
+  subset = d[d$decade==i,]
+  A = do(reps)*summarize(.data = sample_n(subset, size = n, replace = FALSE), mean = mean(runtimeMinutes),sd = sd(runtimeMinutes)) 
+  assign(paste0(i,"_sampMean"),A)
+  }
 
 ```
 
+
+
+
+#Sampling Distributions#
+
+
+('20s' <- summarize(.data = `20s_sampMean`, mean = mean(`20s_sampMean`$mean), sd = sd(`20s_sampMean`$mean)))
+hist(`20s_sampMean`$mean)                                                           
+                                                              
+('30s' <- summarize(.data = `30s_sampMean`, mean = mean(`30s_sampMean`$mean), sd = sd(`30s_sampMean`$mean)))
+hist(`30s_sampMean`$mean)    
+
+('40s' <- summarize(.data = `40s_sampMean`, mean = mean(`40s_sampMean`$mean), sd = sd(`40s_sampMean`$mean)))
+hist(`40s_sampMean`$mean)  
+
+('50s' <- summarize(.data = `50s_sampMean`, mean = mean(`50s_sampMean`$mean), sd = sd(`50s_sampMean`$mean)))
+hist(`50s_sampMean`$mean)  
+
+('60s' <- summarize(.data = `60s_sampMean`, mean = mean(`60s_sampMean`$mean), sd = sd(`60s_sampMean`$mean)))
+hist(`60s_sampMean`$mean)  
+
+('70s' <- summarize(.data = `70s_sampMean`, mean = mean(`70s_sampMean`$mean), sd = sd(`70s_sampMean`$mean)))
+hist(`70s_sampMean`$mean)  
+
+#histograms look normal 
+
+
+
+
+```
 Challenge 2
 
 
@@ -227,5 +252,12 @@ hist(d$years_of_education) #does not look normal (binomial?)
 
 qqnorm(d$zombies_killed)
 hist(d$zombies_killed) # does not look normal (binomial?)
+
+```
+```{r}
+
+n=50
+sample <- sample_n(d, n, replace = FALSE)
+
 
 ```
