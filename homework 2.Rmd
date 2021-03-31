@@ -82,8 +82,6 @@ results <- d %>% group_by(decade) %>%
    summarise(mean=mean(runtimeMinutes), sd=sd(runtimeMinutes))
 
 results
-
-
 ```
 
 Draw a single sample of 100 movies, without replacement, from each decade, calculate this single sample mean and sample std in runtimeMinutes and estimes the SE around the population mean runtimeMinutes for each decade based on the std and sample size from these samples
@@ -107,11 +105,6 @@ for (i in names(table(d$decade))){
 ```
 
 
-
-
-#Sampling Distributions#
-
-
 ('20s' <- summarize(.data = `20s_sampMean`, mean = mean(`20s_sampMean`$mean), sd = sd(`20s_sampMean`$mean)))
 hist(`20s_sampMean`$mean)                                                           
                                                               
@@ -132,6 +125,7 @@ hist(`70s_sampMean`$mean)
 
 #histograms look normal 
 
+SE = c(`20s`$sd,`30s`$sd,`40s`$sd,`50s`$sd,`60s`$sd,`70s`$sd)
 
 
 
@@ -256,8 +250,7 @@ hist(d$zombies_killed) # does not look normal (binomial?)
 ```
 ```{r}
 
-n=50
-sample <- sample_n(d, n, replace = FALSE)
+
 
 
 ```
