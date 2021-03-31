@@ -1,0 +1,231 @@
+---
+title: "lessig-emily-ada-homework-2"
+author: "Emily Lessig"
+date: "3/28/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+Challenge 1
+
+Load dataset as a tibble 
+```{r}
+
+library(tidyverse)
+library(magrittr)
+library(kableExtra)
+library(mosaic)
+library(knitr)
+
+f <- 'https://raw.githubusercontent.com/difiore/ada-2021-datasets/master/IMDB-movies.csv'
+
+d <- read_csv(f, col_names = TRUE)
+```
+Use a one-line statement to filter the dataset to include just movies from 1920 to 1979 and movies that are between 1 and 3 hours longs and add a new column that codes the startYear into a new variable, decade ("20s,"30s"...) -->5651 movies
+```{r}
+
+d <- filter(d, runtimeMinutes >= 60 & runtimeMinutes <=180 & startYear %in% 1920:1979) %>%
+  mutate(decade=case_when(
+    startYear %in% 1920:1929 ~"20s",
+    startYear %in% 1930:1939 ~"30s",
+    startYear %in% 1940:1949 ~"40s",
+    startYear %in% 1950:1959 ~"50s",
+    startYear %in% 1960:1969 ~"60s",
+    startYear %in% 1970:1979 ~"70s",
+    
+  ))
+
+```
+
+Use ggplot2 to plot histograms of the distribution of runtimeMinutes for each decade
+
+```{r}
+
+d %>% ggplot(aes(x=runtimeMinutes))+
+  geom_histogram()+
+  facet_wrap(~decade)
+
+```
+
+Use a one-line statement to calculate the population mean and population standard deviation in runtimeMinutes for each decade and save the results in a new dataframe, results
+
+```{r}
+
+results <- d %>% group_by(decade) %>%
+   summarise(mean=mean(runtimeMinutes), sd=sd(runtimeMinutes))
+
+results
+```
+
+Draw a single sample of 100 movies, without replacement, from each decade, calculate this single sample mean and sample std in runtimeMinutes and estimes the SE around the population mean runtimeMinutes for each decade based on thee std and sample size from these samples
+
+```{r}
+s <- d %>% group_by(decade) %>% sample_n(100) %>% summarise(mean=mean(runtimeMinutes), sd=sd(runtimeMinutes)
+                                                            
+
+                                                            
+```
+Compare these estimates to the actual population mean runtimeMinutes for each decade and to the calculated SE in the population mean for samples of size 100 based on the population std for each decade
+
+```{r}
+
+
+}
+
+```
+
+Generate a sampling distribution of mean runtimeMinutes for each decade by a) drawing 1000 samples of 100 movies from each decade and for each sample b) calculating the mean runtimeMinutes and the std in runtimeMinutes. Then, calculate the mean and the std of the sampling distribution of sample means for each decade and plot a histogram of the sample distribution. what shape does it have?
+
+```{r}
+n <- 100
+reps <-1000
+
+sample_distrib <- do(reps) * d %>% 
+  group_by(decade) %>%
+  sample_n(size = n, replace = FALSE) %>%
+  summarise_at(vars(runtimeMinutes), funs(mean(., na.rm=TRUE), sd(., na.rm = TRUE)))
+
+
+```
+
+Challenge 2
+
+
+
+```{r}
+
+ppois(9, lambda=12)
+
+ppois(0, lambda = 12)
+
+dpois(5, lambda = 12)
+
+1- ppois(18, lambda = 12)
+
+```
+
+Plot the relevant Poisson mass function 
+
+```{r}
+
+x= 0:24
+y=dpois(x,lambda = 12)
+barplot(y,
+        ylim=c(0, 0.3),
+        names.arg = x,
+        space = 0.2
+        )
+
+
+```
+
+Use rpois function, simulate 1460 results from distribution 
+
+```{r}
+
+r <- rpois(1460, 12)
+
+hist(r, xlim = c(0, 24))
+
+```
+
+Challenge 3
+
+```{r}
+d <- read.csv("https://raw.githubusercontent.com/difiore/ada-2021-datasets/master/zombies.csv")
+
+#calculate means
+
+
+m<-c((mean(d$height)), (mean(d$weight)),  (mean(d$age)), (mean(d$years_of_education)), (mean(d$zombies_killed)
+
+#standard deviation
+
+std.pop <- function(x){sd(x)*sqrt((length(x)-1)/length(x))}
+
+std <- c((std.pop(d$height)), (std.pop(d$weight)), (std.pop(d$age)), (std.pop(d$years_of_education)), (std.pop(d$zombies_killed)))
+```
+
+boxplots
+
+```{r}
+ggplot(d, aes(x=factor(0), y=height))+
+  geom_boxplot()+
+  facet_grid(~gender) +theme_classic()
+
+ggplot(d, aes(x=factor(0), y=weight))+
+  geom_boxplot()+
+  facet_grid(~gender) +theme_classic()
+
+ggplot(d, aes(x=factor(0), y=age))+
+  geom_boxplot()+
+  facet_grid(~gender) +theme_classic()
+
+ggplot(d, aes(x=factor(0), y=years_of_education))+
+  geom_boxplot()+
+  facet_grid(~gender) +theme_classic()
+
+ggplot(d, aes(x=factor(0), y=zombies_killed))+
+  geom_boxplot()+
+  facet_grid(~gender) +theme_classic()
+
+```
+
+scatterplots 
+
+
+```{r}
+ggplot(d, aes(x=age, y=weight))+
+  geom_point(aes(color=gender)) + theme_classic()
+
+ggplot(d, aes(x=age, y=height)) +
+  geom_point(aes(color=gender)) +theme_classic()
+
+##There seems to be a positive relationship between age and height with male heights being higher than females. Similarly, males seem to have a higher average weight than females (across ages), but there does not appear to be a disernable relationship otherwise between weight and age.
+```
+QQ plot 
+
+```{r}
+qqnorm(d$height)
+
+
+hist(d$height)
+
+#seems to have a normal distribution 
+
+qqnorm(d$weight)
+hist(d$weight) #seems normal
+
+qqnorm(d$age)
+hist(d$age) #seems normal
+
+qqnorm(d$years_of_education)
+hist(d$years_of_education) #does not look normal (binomial?)
+
+qqnorm(d$zombies_killed)
+hist(d$zombies_killed) # does not look normal (binomial?)
+
+```
