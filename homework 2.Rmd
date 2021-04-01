@@ -43,6 +43,7 @@ library(dplyr)
 install.packages("ggpubr")
 library(ggpubr)
 library(radiant)
+library(cowplot)
 
 f <- 'https://raw.githubusercontent.com/difiore/ada-2021-datasets/master/IMDB-movies.csv'
 
@@ -62,6 +63,7 @@ d <- filter(d, runtimeMinutes >= 60 & runtimeMinutes <=180 & startYear %in% 1920
     
   ))
 
+#yes, d is 5651
 ```
 
 Use ggplot2 to plot histograms of the distribution of runtimeMinutes for each decade
@@ -87,20 +89,14 @@ results
 Draw a single sample of 100 movies, without replacement, from each decade, calculate this single sample mean and sample std in runtimeMinutes and estimes the SE around the population mean runtimeMinutes for each decade based on the std and sample size from these samples
 
 ```{r}
-s <- d %>% group_by(decade) %>% sample_n(100) %>% summarise(mean=mean(runtimeMinutes), sd=sd(runtimeMinutes)
- 
-                                                          
+s <- d %>% group_by(decade) %>% sample_n(100) 
+g <-s %>% group_by(decade) %>% summarise(means=mean(runtimeMinutes), std=sd(runtimeMinutes))
 
-                                                            
+pop_mean <- results$mean
+pop_sd <- results$sd
+pop_se <- pop_sd/sqrt(n)
 
-n = 100
-reps = 1000
 
-for (i in names(table(d$decade))){
-  subset = d[d$decade==i,]
-  A = do(reps)*summarize(.data = sample_n(subset, size = n, replace = FALSE), mean = mean(runtimeMinutes),sd = sd(runtimeMinutes)) 
-  assign(paste0(i,"_sampMean"),A)
-  }
 
 ```
 
@@ -176,16 +172,15 @@ Challenge 3
 ```{r}
 d <- read.csv("https://raw.githubusercontent.com/difiore/ada-2021-datasets/master/zombies.csv")
 
-#calculate means
+#calculate means & SD
+
+zombies <- select(d, "gender", "height", "weight", "age", "years_of_education", "zombies_killed")
+
+means <- summarise(zombies, mean(height), mean(weight), mean(age), mean(year_of_education), mean(zombies_killed)
+
+SD <- summarise(zombies, sd(height), sd(weight), sd(age),  sd(years_of_education), sd(zombies_killed))
 
 
-m<-c((mean(d$height)), (mean(d$weight)),  (mean(d$age)), (mean(d$years_of_education)), (mean(d$zombies_killed)
-
-#standard deviation
-
-std.pop <- function(x){sd(x)*sqrt((length(x)-1)/length(x))}
-
-std <- c((std.pop(d$height)), (std.pop(d$weight)), (std.pop(d$age)), (std.pop(d$years_of_education)), (std.pop(d$zombies_killed)))
 ```
 
 boxplots
@@ -248,9 +243,61 @@ qqnorm(d$zombies_killed)
 hist(d$zombies_killed) # does not look normal (binomial?)
 
 ```
+
 ```{r}
 
 
+n <- 50
 
+q <- sample_n (zombies, size=n, replace=FALSE)
+
+
+(mean_samp <- apply(q, 2, mean))
+(sd_samp <- apply(q, 2, sd))
+(se_samp <- sd_samp/sqrt(n))
+```
+Draw another 99 random samples...
+```{r}
+
+random <- data.frame()
+for (i in 1:99) {
+  sample <- d %>% sample_n(50) %>% summarise(height_mean = mean(height), 
+                weight_mean = mean(weight), 
+                age_mean = mean(age), 
+                kills_mean = mean(zombies_killed), 
+                ed_mean = mean(years_of_education),
+                height_se = sd(height), 
+                weight_se = sd(weight),
+                age_se = sd(age),
+                kills_se = sd(zombies_killed),
+                edu_se = sd(years_of_education))
+dist <- rbind(dist, sample)
+}
+
+summ <- dist%>% summarise(height_mean= mean(m_height), 
+               weight_mean = mean(m_weight), 
+                age_mean= mean(m_age), 
+               kills_mean = mean(m_kills), 
+               ed_mean = mean(m_edu),
+                height_se = sd(se_height), 
+                weight_se = sd(se_weight),
+               age_se  = sd(se_age),
+                kills_se = sd(se_kills),
+               edu_se= sd(se_edu))
+```
+```{r}
+
+for (i in seq(1, 10, 2)) {
+CIi<- dist[[1,i]] + c(-1, 1) * qnorm(1 - .05 / 2) * dist_stats[[1, i+1]]
+print(paste("95% CI", colnames(dist_stats)[i], ": ", sep=""))
+print(CI)
+}
+
+
+
+
+ "rmarkdown::render('homework 2.Rmd')"
 
 ```
+
+
